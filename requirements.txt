@@ -141,7 +141,6 @@ pure-eval==0.2.2
 pyarrow==16.0.0
 pyasn1==0.5.1
 pyasn1-modules==0.3.0
-PyAudio==0.2.14
 pycparser==2.21
 pydantic==2.5.2
 pydantic_core==2.14.5
@@ -149,10 +148,6 @@ pydeck==0.9.0b1
 pydub==0.25.1
 Pygments==2.17.2
 pyparsing==3.1.1
-pypdf==4.0.0
-PyQt5==5.15.10
-PyQt5-Qt5==5.15.2
-PyQt5-sip==12.13.0
 PySocks==1.7.1
 python-dateutil==2.8.2
 python-dotenv==1.0.0
