@@ -164,8 +164,6 @@ python-multipart==0.0.6
 python-telegram-bot==20.7
 pyttsx3==2.90
 pytz==2023.3.post1
-pywin32==306
-pywinpty==2.0.12
 PyYAML==6.0.1
 pyzmq==25.1.1
 ratelim==0.1.6
