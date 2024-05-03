@@ -4,4 +4,6 @@ langchain
 streamlit
 tiktoken
 langchain_google_genai
+firefox-esr
+geckodriver
 

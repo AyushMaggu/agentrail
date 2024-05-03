@@ -44,11 +44,17 @@ def fetch_train_details(origin, destination, travel_date):
     
     # os.environ['MOZ_HEADLESS'] = '1'
     url = "https://www.makemytrip.com/railways/listing?classCode=&className=All%20Classes&date=20240430&destCity=Mumbai&destStn=CSTM&srcCity=Delhi&srcStn=NDLS"
-    options = Options()
-    driver = webdriver.Firefox(options=options)
+    firefoxOptions = Options()
+    firefoxOptions.add_argument("--headless")
+    driver = webdriver.Firefox(
+    options=firefoxOptions,
+    executable_path="/home/appuser/.conda/bin/geckodriver",)
+    
+    #options = Options()
+    #driver = webdriver.Firefox(options=options)
     #options.headless = True
     driver.get(url)
-    driver.maximize_window()
+    #driver.maximize_window()
     time.sleep(1)
 
     # Selecting Origin City
