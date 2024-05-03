@@ -1,3 +1,1 @@
-AgentRail is a step towards new blend of automated browsing powered by Selenium and combined with the intelligence and conversational ability of Large Language Models    
-AgentRail not only automates browsing Indian Train Schedule on MakeMyTrip website but it also allows users to ask much more flexible and complicated queries using LLM Agents that can never be immediately solved by a traditional website based experiene.
-AgentRail is currently hosted as a Streamlit App allowing users to ask queries regarding Indian Railways and even book tickets with the power of conversation rather than browse-click.  
+AgentRail is an LLM agent whose expertise lies in solving user queries regarding train schedules and guiding them to book tickets on MakeMyTrip website. All this is done in a conversational manner rather than browse and click method. AgentRail aims to be first in the list of automated browsing experience led by theintelligence of Large Language Models.  
