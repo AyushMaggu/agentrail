@@ -7,9 +7,11 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.firefox.options import Options
 from geminichain import geminichain
+from datetime import datetime
 import time
 import re
 import os
+
 
 ### Add the condition at the appropriate place about what to do after a ticket has been booked and 
 ### Firefox browser has moved forward.  
@@ -85,7 +87,6 @@ def fetch_train_details(origin, destination, travel_date):
     origin_code = extract_longest_capital_substring(first_option_origin)
     destination_code = extract_longest_capital_substring(first_option_destination)
     
-    #os.environ['MOZ_HEADLESS'] = '0'
 
     url1 = 'https://makemytrip.com/railways/listing?classCode=&className=All%20Classes&'
     url2 = 'date={}_find&destCity={}&destStn={}&srcCity={}&srcStn={}'.format(travel_date, destination_formatted, destination_code, origin_formatted, origin_code)
@@ -156,15 +157,11 @@ def fetch_train_details(origin, destination, travel_date):
 
 
 # Streamlit app
-import streamlit as st
-from datetime import datetime
-import time
-
 
 def initialize_agent(train_details, origin, destination, travel_date):
-    agent = geminichain(mem='y', system_message=f"""1. You are a friendly multi-lingual train ticket booking AI agent named AgentRail and you are an expert at solving user railway queries and booking train tickets. 
-                        You were created by Xaisr. 2. User has asked for trains traveling from {origin} to {destination} on {travel_date} and you are supposed to give him a brief yet explanatory, well-structured and meaningful answer in bullet point format.
-                        3. Use below given examples and trains scheduling information to help answer user queries. 
+    agent = geminichain(mem='y', system_message=f"""1. You are a friendly multi-lingual train ticket booking AI agent named AgentRail and you are an expert at solving user railway queries. 
+                        You were created by Xaisr. 2. User has asked for trains traveling from {origin} to {destination} on {travel_date} and you are supposed to give him an explanatory, well-structured and meaningful answer in bullet point format.
+                        3. Use below given examples and trains scheduling information to help answer user queries. If no trains are found between {origin} to {destination} , then you can suggest the user to travel via an intermediate station based on your pre-existing knowledge of indian railways.
                         4. Example Rail Class = SL means sleeper class/category, Rail Class "1A"/"2A"/"3A" means first AC, second AC, third AC class/category. Rail Class "CC" means chair car, Rail Class "2S" means second sitting. Rail Class "EC" means executive chair., Rail Class "3E" means AC three tier(economy) 
                         5. Logic: If Availability != AVAILABLE X, where X is any number for a given Rail Class then, confirmed booking can't be currently done for that RAIL Class. Examples below: 
                         6. Example: "Availability : AVAILABLE 10" availability/booking status means 10 tickets are currently available for confirmed reservation/booking. 
@@ -190,7 +187,7 @@ def initialize_agent(train_details, origin, destination, travel_date):
                         Rail Class :
                         Availability :
                         Price :
-                        and if the user again confirms his choice of booking without any changes, then your next response should be exactly like below, otherwise ticket won't be booked: 
+                        and if the user again confirms his choice of booking without any changes, then your next response should be exactly like below but filled in with actual values of train element number, rail class and train name at appropriate places : 
                         Booking Selected! Routing you to MMT website | Train Element Number : |Train Name : | Rail Class :
                         17. As you have the ability to book ticktes, so Never say : I am sorry, I can't book a ticket for you at the moment. I can only provide you with train details and schedules.
                         18.Train scheduling information : {train_details}""", temperature=0.1)
@@ -198,9 +195,6 @@ def initialize_agent(train_details, origin, destination, travel_date):
 
 
 def main():
-    
-    #Makde browser headless
-    #os.environ['MOZ_HEADLESS'] = '1'
 
     st.title("AgentRail: Your Friendly AIndian-Rail Agent")
 
@@ -229,8 +223,7 @@ def main():
     with submit_container:
         if st.sidebar.button("Submit"):
             with st.spinner("Fetching Train Details ..."):
-                # Make FireFox browser hidden
-                #os.environ['MOZ_HEADLESS'] = '1'
+
                 with st.empty():
                     try:
                         train_details, driver, links = fetch_train_details(origin, destination, travel_date.strftime("%Y%m%d"))
@@ -303,14 +296,16 @@ def main():
         
         ###########################################################################################   
 
-        if "Booking Selected" in agent_response:
+        if "Booking Selected" in agent_response or "Booking Confirmed" in agent_response:
+        # Your code here
+
            # os.environ.pop('MOZ_HEADLESS')
 
             print("Below is Agent Response : ")
             print(agent_response)
 
             # Extract train element number using regex
-            train_element_number_match = re.search(r"Train Element Number : (\d+)", agent_response)
+            train_element_number_match = re.search(r"Train Element Number: (\d+)", agent_response)
             if train_element_number_match:
                 train_element_number = int(train_element_number_match.group(1))
                 st.session_state.booked_train_element_number = train_element_number
@@ -318,7 +313,7 @@ def main():
                 print("Could not find train element number in the agent response.")
 
             # Extract rail class using regex
-            rail_class_match = re.search(r"Rail Class : (\w+)", agent_response)
+            rail_class_match = re.search(r"Rail Class: (\w+)", agent_response)
             if rail_class_match:
                 rail_class = rail_class_match.group(1)
                 st.session_state.booked_rail_class = rail_class
@@ -326,7 +321,7 @@ def main():
                 print("Could not find rail class in the agent response.")
             
             # Extract train name using Regex
-            train_name_match = re.search(r"Train Name : \s*(.*?)\s*\|", agent_response)
+            train_name_match = re.search(r"Train Name: \s*(.*?)\s*\|", agent_response)
             if train_name_match:
                 train_name = train_name_match.group(1)
                 st.session_state.booked_train_name = train_name
@@ -335,7 +330,7 @@ def main():
             
             #os.environ.pop('MOZ_HEADLESS')
             # Making sure that relevant elements are available for printing : 
-            if "booked_train_element_number" in st.session_state and "booked_rail_class" in st.session_state:
+            if "booked_train_name" in st.session_state and "booked_rail_class" in st.session_state:
                 print(f"Your reserved train name is: {st.session_state.booked_train_name}")
                 print(f"Your reserved train element number is: {st.session_state.booked_train_element_number}")
                 print(f"Your reserved rail class is: {st.session_state.booked_rail_class}")
@@ -344,7 +339,7 @@ def main():
             #######################################################################################################################################################################################
            
             # This code snip is about booking the train by clicking on the relevant rail class element:
-            if "booked_train_element_number" in st.session_state and "booked_rail_class" in st.session_state:
+            if "booked_train_name" in st.session_state and "booked_rail_class" in st.session_state:
                 
                 #train_number = st.session_state.booked_train_element_number+1  # Replace with the desired train number
                 #rail_class_number = 1  # Replace with the desired rail-class number
@@ -364,15 +359,28 @@ def main():
                 # Click on the rail-class element
                 #rail_class_element.click()
                 
-                rail_class_elements = st.session_state.links[train_name].find_elements(By.CSS_SELECTOR, ".trainSubsChild .rail-class")
+                rail_class_elements = st.session_state.links[st.session_state.booked_train_name].find_elements(By.CSS_SELECTOR, ".trainSubsChild .rail-class")
                 # Assume rail_class_value contains the desired value "1A"
                 for rail_class_element in rail_class_elements:
                    
                     if rail_class_element.text.strip() == st.session_state.booked_rail_class:
                         rail_class_element.click()
                         break  # Exit the loop once the desired element is clicked
-               
-             
+                
+                try:
+                # Wait for the "Change of Station" element to be clickable (optional)
+                    ele = WebDriverWait(st.session_state.driver, 10).until(
+                    EC.element_to_be_clickable((By.CSS_SELECTOR, "div.latoBold")))
+    
+                # Once the element is clickable, click on it
+                    ele.click()
+
+                except Exception as e:
+                # Ignore any exceptions and continue execution
+                    pass
+
+
+
 if __name__ == "__main__":
     main()
 
