@@ -3,3 +3,5 @@ python-dotenv
 langchain
 streamlit
 tiktoken
+langchain_google_genai
+
